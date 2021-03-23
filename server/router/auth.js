@@ -1,6 +1,8 @@
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 
 // mongo db connections
 const DB = 'mongodb+srv://mernstack:mrinal@cluster0.qcfbk.mongodb.net/MERN_THAPA?retryWrites=true&w=majority';
@@ -83,19 +85,35 @@ router.post('/signin', async (req, res) => {
     // console.log(req.body);
     // req.json({ message: "awsome" });
     try {
+        let token;
         const { email, password } = req.body;
         if (!email || !password) {
             res.status(400).json({ message: "plse fill the box" })
         }
 
-        const tusername = await User.findOne({ email: email });
-        console.log(tusername);
-        if (!tusername) {
+        const userlogin = await User.findOne({ email: email });
+        // console.log(tusername);
+        if (userlogin) {
+            const ismatch = await bcrypt.compare(password, userlogin.password);
+            // for generate token
+            token = await userlogin.generateAuthToken();
+            console.log(token);
+            // store token in cookies
+            res.cookie("jwttoken", token, {
+                expires: new Date(Date.now() + 25892000000),
+                httpOnly: true
+            });
+
+            if (!ismatch) {
+                res.status(200).json({ error: "invalid error" });
+            }
+            else {
+                res.status(400).json({ message: "user signin successfully" });
+            }
+        } else {
             res.status(200).json({ error: "invalid error" });
         }
-        else {
-            res.status(400).json({ message: "user signin successfully" });
-        }
+
     } catch (err) {
         console.log(err);
     }

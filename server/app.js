@@ -26,6 +26,7 @@ const middleware = (req, res, next) => {
 }
 // end
 app.get('/', (req, res) => {
+    // res.cookie("mycookie", 'mrinal');
     res.send('this is index page from the server');
 });
 app.get('/Home', (req, res) => {
